@@ -1,6 +1,6 @@
 from preprocess import *
-from embeddings import *
-from modelling.modelling import *
+from neural_embeddings import *
+from modelling.neural_modelling import *
 from modelling.data_model import *
 import random
 seed =0
@@ -22,8 +22,8 @@ def preprocess_data(df):
     # df[Config.TICKET_SUMMARY] = translate_to_en(df[Config.TICKET_SUMMARY].tolist())
     return df
 
-def get_embeddings(df:pd.DataFrame):
-    X = get_tfidf_embd(df)  # get tf-idf embeddings
+def get_embeddings(df: pd.DataFrame):
+    X = get_sentence_embeddings(df)
     return X, df
 
 def get_data_object(X: np.ndarray, df: pd.DataFrame):

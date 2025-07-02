@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from model.base import BaseModel
 from sklearn.metrics import classification_report
+from sklearn.utils.class_weight import compute_class_weight
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -37,11 +38,20 @@ class FeedforwardNN(BaseModel):
             nn.Linear(512, num_classes)
         )
 
-        criterion = nn.CrossEntropyLoss()
+        # criterion = nn.CrossEntropyLoss()
+        # optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+
+        # Compute class weights
+        y_labels = np.array([self.label_map[label] for label in data.y_train])
+        class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_labels), y=y_labels)
+        weights = torch.tensor(class_weights, dtype=torch.float32)
+
+        # Apply class weights to loss
+        criterion = nn.CrossEntropyLoss(weight=weights)
         optimizer = optim.Adam(self.model.parameters(), lr=0.001)
 
         self.model.train()
-        for epoch in range(10):  # tune this
+        for epoch in range(30):
             for batch_x, batch_y in loader:
                 optimizer.zero_grad()
                 output = self.model(batch_x)

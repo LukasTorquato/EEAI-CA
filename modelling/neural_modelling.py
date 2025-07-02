@@ -1,7 +1,7 @@
 from model.neuralnetwork import FeedforwardNN
 
-def model_predict(data, df, name, model_type="nn"):
-    if model_type == "nn":
+def model_predict(data, df, name, model_type="neuralnetwork"):
+    if model_type == "neuralnetwork":
         model = FeedforwardNN("NN", data.get_embeddings(), data.get_type())
     else:
         raise NotImplementedError(f"{model_type} not supported yet.")
