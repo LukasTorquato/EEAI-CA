@@ -11,6 +11,7 @@ def get_input_data()->pd.DataFrame:
     df = pd.concat([df1, df2])
     df[Config.INTERACTION_CONTENT] = df[Config.INTERACTION_CONTENT].values.astype('U')
     df[Config.TICKET_SUMMARY] = df[Config.TICKET_SUMMARY].values.astype('U')
+    df.drop(columns=['Unnamed: 11', 'Unnamed: 12', 'Interaction date'], inplace=True)
     df["y"] = df[Config.CLASS_COL]
     df = df.loc[(df["y"] != '') & (~df["y"].isna()),]
     return df
