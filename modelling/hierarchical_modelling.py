@@ -1,11 +1,13 @@
 import os
+import pandas as pd
 from model.neuralnetwork import FeedforwardNN
 from modelling.data_model import Data
 from neural_embeddings import get_sentence_embeddings
 from sklearn.metrics import classification_report
 
 def train_submodel(X, y, level_name):
-    data = Data(X, y)
+    df_temp = pd.DataFrame({"y": y})
+    data = Data(X, df_temp)
     if data.X_train is None:
         print(f"Skipping {level_name} due to insufficient data.")
         return None
