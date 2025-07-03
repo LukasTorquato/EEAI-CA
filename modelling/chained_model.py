@@ -22,7 +22,11 @@ class MultiTargetData():
         print(f"Valid rows after filtering: {valid_rows.sum()} out of {len(y_multi)}")
         y_clean = y_multi[valid_rows]
         X_clean = X[valid_rows]
-
+        
+        if len(y_clean) < 6:  # Need at least 6 samples for train/test split
+            print("Insufficient data for multi-target classification: Skipping ...")
+            self.X_train = None
+            return
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X_clean, y_clean, test_size=0.2, random_state=0
