@@ -15,7 +15,7 @@ def model_predict(data, df, name):
     chained_model = ChainedMultiOutputClassifier("ChainedRF", data.get_embeddings(), data.get_type())
     chained_model.train(data)
     chained_model.predict(data.X_test)
-    chained_model.print_results(data)
+    chained_model.print_results(data, by_layer=False)
 
 def model_evaluate(model, data):
-    model.print_results(data)
+    model.print_results(data, by_layer=False)

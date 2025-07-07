@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
 from model.base import BaseModel
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from sklearn.preprocessing import LabelEncoder
 import random
 
-seed = 0
+seed = 42
 np.random.seed(seed)
 random.seed(seed)
 
@@ -24,11 +24,13 @@ class ChainedMultiOutputClassifier(BaseModel):
         self.y = y  # expected shape (n_samples, 4) for y1, y2, y3, y4
         
         # Individual models for each level
-        self.model_y1 = RandomForestClassifier(n_estimators=500, random_state=seed, class_weight='balanced')
-        self.model_y2 = RandomForestClassifier(n_estimators=500, random_state=seed, class_weight='balanced')
-        self.model_y3 = RandomForestClassifier(n_estimators=500, random_state=seed, class_weight='balanced')
-        self.model_y4 = RandomForestClassifier(n_estimators=500, random_state=seed, class_weight='balanced')
+        rfc = RandomForestClassifier(n_estimators=500, random_state=seed, class_weight='balanced')
         
+        self.model_y1 = BaggingClassifier(estimator=rfc, n_estimators=20, random_state=seed, n_jobs=-1)
+        self.model_y2 = BaggingClassifier(estimator=rfc, n_estimators=20, random_state=seed, n_jobs=-1)
+        self.model_y3 = BaggingClassifier(estimator=rfc, n_estimators=20, random_state=seed, n_jobs=-1)
+        self.model_y4 = BaggingClassifier(estimator=rfc, n_estimators=20, random_state=seed, n_jobs=-1)
+
         # Label encoders for each target
         self.encoder_y1 = LabelEncoder()
         self.encoder_y2 = LabelEncoder()
@@ -94,37 +96,46 @@ class ChainedMultiOutputClassifier(BaseModel):
         y4_pred = self.encoder_y4.inverse_transform(y4_pred_encoded)
         
         # Combine all predictions
+        self.encoded_preds = np.column_stack([y1_pred_encoded, y2_pred_encoded, y3_pred_encoded, y4_pred_encoded])
         self.predictions = np.column_stack([y1_pred, y2_pred, y3_pred, y4_pred])
         return self.predictions
 
-    def print_results(self, data):
+    def print_results(self, data, by_layer = False):
 
         if self.predictions is None:
             print("No predictions available. Please run predict() first.")
             return
+        if by_layer:
+            level_names = ['Type 1 (y1)', 'Type 2 (y2)', 'Type 3 (y3)', 'Type 4 (y4)']
             
-        level_names = ['Type 1 (y1)', 'Type 2 (y2)', 'Type 3 (y3)', 'Type 4 (y4)']
-        
-        print(f"=== {self.model_name} - Chained Multi-Output Results ===")
-        
-        for i, level_name in enumerate(level_names):
-            print(f"\n--- {level_name} ---")
-            y_true = data.y_test[:, i]
-            y_pred = self.predictions[:, i]
+            print(f"=== {self.model_name} - Chained Multi-Output Results ===")
             
-            # Filter out empty/nan values for evaluation
-            valid_indices = (y_true != '') & (~pd.isna(y_true))
-            if valid_indices.sum() > 0:
-                y_true_clean = y_true[valid_indices]
-                y_pred_clean = y_pred[valid_indices]
-                # Convert np.nan to 'missing' for predictions
-                y_pred_clean = np.array(['missing' if x is np.nan else x for x in y_pred_clean])
-
+            for i, level_name in enumerate(level_names):
+                print(f"\n--- {level_name} ---")
+                y_true = data.y_test[:, i]
+                y_pred = self.predictions[:, i]
+                y_true_clean = np.array(['missing' if x is np.nan else x for x in y_true])
+                y_pred_clean = np.array(['missing' if x is np.nan else x for x in y_pred])
                 print(f"Accuracy: {accuracy_score(y_true_clean, y_pred_clean):.4f}")
                 print("Classification Report:")
                 print(classification_report(y_true_clean, y_pred_clean, zero_division=0))
-            else:
-                print("No valid data for evaluation")
+
+        # Overall Accuracy
+        else:
+            y_true = data.y_test
+            y_pred = self.predictions
+            y_true_clean = list()
+            y_pred_clean = list()
+            for i in range(y_true.shape[0]):
+                y_true_clean.append(' '.join('missing' if x is np.nan else x for x in y_true[i]))
+                y_pred_clean.append(' '.join('missing' if x is np.nan else x for x in y_pred[i]))
+            y_true_clean = np.array(y_true_clean)
+            y_pred_clean = np.array(y_pred_clean)
+
+            print(f"Accuracy: {accuracy_score(y_true_clean, y_pred_clean):.4f}")
+            print("Classification Report:")
+            print(classification_report(y_true_clean, y_pred_clean, zero_division=0))
+
 
     def data_transform(self) -> None:
         pass
