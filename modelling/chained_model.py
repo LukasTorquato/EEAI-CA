@@ -14,7 +14,7 @@ class MultiTargetData():
                  df: pd.DataFrame) -> None:
 
         # Get all target columns
-        target_cols = ['y1', 'y2', 'y3', 'y4']
+        target_cols = ['y2', 'y3', 'y4']
         y_multi = df[target_cols].to_numpy()
         
         # Filter out rows where ALL targets are empty/nan
