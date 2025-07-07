@@ -39,7 +39,7 @@ if __name__ == '__main__':
     df[Config.TICKET_SUMMARY] = df[Config.TICKET_SUMMARY].values.astype('U')
     grouped_df = df.groupby(Config.GROUPED)
     for name, group_df in grouped_df:
-        print(name)
+        print("\n"+30*"="+'\n'+name +'\n'+30*"=")
         X, df = get_embeddings(group_df)
         data = get_data_object(X, group_df)
         perform_modelling(data, group_df, name)

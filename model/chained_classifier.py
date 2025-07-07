@@ -108,20 +108,28 @@ class ChainedMultiOutputClassifier(BaseModel):
 
         # Overall Accuracy
         else:
-            y_true = data.y_test
-            y_pred = self.predictions
-            y_true_clean = list()
-            y_pred_clean = list()
-            for i in range(y_true.shape[0]):
-                y_true_clean.append(' '.join('missing' if x is np.nan else x for x in y_true[i]))
-                y_pred_clean.append(' '.join('missing' if x is np.nan else x for x in y_pred[i]))
-            y_true_clean = np.array(y_true_clean)
-            y_pred_clean = np.array(y_pred_clean)
+            self.multi_accuracy(data)
 
-            print(f"Accuracy: {accuracy_score(y_true_clean, y_pred_clean):.4f}")
-            print("Classification Report:")
-            print(classification_report(y_true_clean, y_pred_clean, zero_division=0))
+    def multi_accuracy(self, data):
+        """
+        Calculate multi-label accuracy.
+        Returns the proportion of samples where all labels match.
+        """
+        y_true = data.y_test
+        y_pred = self.predictions
 
+        accuracy = []
+        for yt, yp in zip(y_true, y_pred):
+            acc = 0
+            for i in range(len(yt)):
+                if yt[i] == yp[i]:
+                    acc += 1
+                else:
+                    break
+            accuracy.append(acc)
+
+        print("Individual Accuracies: ", np.array(accuracy) / len(y_true[0]))  # Divide by number of labels (3 in this case)
+        print("Overall Accuracy: ", (np.average(np.array(accuracy)) / len(y_true[0])))  # Divide by number of labels (3 in this case)
 
     def data_transform(self) -> None:
         pass
