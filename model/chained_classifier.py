@@ -73,6 +73,7 @@ class ChainedMultiOutputClassifier(BaseModel):
 
     def predict(self, X_test: np.ndarray):
         """Predict in chain: y1 → y2 → y3 → y4"""
+        print("Predicting with Chained Multi-Output Classifier...")
         # Level 1: Predict y1
         y1_pred_encoded = self.model_y1.predict(X_test)
         y1_pred = self.encoder_y1.inverse_transform(y1_pred_encoded)
@@ -116,7 +117,9 @@ class ChainedMultiOutputClassifier(BaseModel):
             if valid_indices.sum() > 0:
                 y_true_clean = y_true[valid_indices]
                 y_pred_clean = y_pred[valid_indices]
-                
+                # Convert np.nan to 'missing' for predictions
+                y_pred_clean = np.array(['missing' if x is np.nan else x for x in y_pred_clean])
+
                 print(f"Accuracy: {accuracy_score(y_true_clean, y_pred_clean):.4f}")
                 print("Classification Report:")
                 print(classification_report(y_true_clean, y_pred_clean, zero_division=0))
