@@ -9,7 +9,8 @@ def train_submodel(X, y, level_name):
     df_temp = pd.DataFrame({"y": y})
     data = Data(X, df_temp)
     if data.X_train is None:
-        print(f"Skipping {level_name} due to insufficient data.")
+        # print(f"Skipping {level_name} due to insufficient data.")
+        print(f"{level_name}: Unable to create train/test split — likely due to single class.")
         return None
 
     model = FeedforwardNN(level_name, data.get_embeddings(), data.get_type())
