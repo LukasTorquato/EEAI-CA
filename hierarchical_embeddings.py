@@ -7,10 +7,15 @@ seed =0
 random.seed(seed)
 np.random.seed(seed)
 
-def get_tfidf_embd(df:pd.DataFrame):
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    tfidfconverter = TfidfVectorizer(max_features=2000, min_df=4, max_df=0.90)
-    data = df[Config.TICKET_SUMMARY] + ' ' + df[Config.INTERACTION_CONTENT]
+
+def get_tfidf_embd(df, min_df=1, max_df=1.0):
+    tfidfconverter = TfidfVectorizer(
+        max_features=2500,
+        min_df=min_df,
+        max_df=max_df,
+        stop_words='english'
+    )
+    data = df[Config.INTERACTION_CONTENT].values.astype('U')
     X = tfidfconverter.fit_transform(data).toarray()
     return X
 
