@@ -53,13 +53,13 @@ class ChainedMultiOutputClassifier(BaseModel):
         self.model_y2.fit(X_train, y2_train_encoded)
 
         print("Training Level 3 (y3)...")
-        # Level 3: Train y3 using original features + y1 + y2 predictions
+        # Level 3: Train y3 using original features + y2 predictions
         y2_pred_train = self.model_y2.predict(X_train)
         X_train_with_y2 = np.column_stack([X_train, y2_pred_train])
         self.model_y3.fit(X_train_with_y2, y3_train_encoded)
         
         print("Training Level 4 (y4)...")
-        # Level 4: Train y4 using original features + y1 + y2 + y3 predictions
+        # Level 4: Train y4 using original features + y2 + y3 predictions
         y3_pred_train = self.model_y3.predict(X_train_with_y2)
         X_train_with_y2_y3 = np.column_stack([X_train_with_y2, y3_pred_train])
         self.model_y4.fit(X_train_with_y2_y3, y4_train_encoded)
